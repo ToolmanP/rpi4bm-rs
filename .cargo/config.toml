@@ -1,0 +1,6 @@
+[build]
+target = "aarch64-unknown-none"
+
+[target.aarch64-unknown-none]
+# cc = "aarch64-unknown-linux-gnu-gcc"
+linker = "aarch64-unknown-linux-gnu-gcc"

@@ -16,4 +16,6 @@ clean:
 	cargo clean
 	rm images/kernel8.img
 
-.PHONY: kernel clean
+.PHONY: release clean
+
+.DEFAULT_GOAL := release

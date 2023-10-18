@@ -28,7 +28,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rpi4b-uart-rs"
+name = "rpi4bm-rs"
 version = "0.1.0"
 dependencies = [
  "buddy_system_allocator",

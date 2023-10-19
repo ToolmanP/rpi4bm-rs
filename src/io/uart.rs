@@ -86,12 +86,12 @@ impl UART {
     }
 
     fn write(&self, ch: u8) {
+        self.block();
         self.aux.write_io(ch as u32);
     }
 
     pub fn write_text(&self, text: &str) {
         for ch in text.bytes() {
-            self.block();
             if ch == '\n' as u8 {
                 self.write('\r' as u8)
             }

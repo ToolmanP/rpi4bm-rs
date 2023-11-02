@@ -28,10 +28,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "num-traits"
+version = "0.2.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "39e3200413f237f41ab11ad6d161bc7239c84dcb631773ccd7de3dfe4b5c267c"
+dependencies = [
+ "autocfg",
+]
+
+[[package]]
 name = "rpi4bm-rs"
 version = "0.1.0"
 dependencies = [
  "buddy_system_allocator",
+ "num-traits",
 ]
 
 [[package]]

@@ -1,3 +1,5 @@
+use num_traits::{PrimInt, Unsigned};
+
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct MMIO {
@@ -40,44 +42,45 @@ impl MMIO {
         MMIO { addr }
     }
 
-    pub fn offset(mut self, off: u64) -> Self {
-        self.addr += off;
+    pub fn offset<T>(mut self, offset: T) -> Self
+    where
+        T: TryInto<u64>,
+    {
+        // TODO: Check i64/u64 num_size
+        self.addr += offset.try_into().unwrap_or(0);
         self
     }
 
-    pub fn write(&self, val: Raw) {
+    pub fn write<T>(&self, val: T)
+    where
+        T: PrimInt,
+    {
         unsafe {
-            match val {
-                Raw::U64(u) => *(self.addr as *mut u64) = u,
-                Raw::U32(u) => *(self.addr as *mut u32) = u,
-                Raw::U16(u) => *(self.addr as *mut u16) = u,
-                Raw::U8(u) => *(self.addr as *mut u8) = u,
-            }
+            core::ptr::write_volatile(self.addr as *mut T, val);
         }
     }
 
-    pub fn read_u8(&self) -> u8 {
-        unsafe {
-            return *(self.addr as *const u8);
-        }
+    pub fn write_w_off<T, U>(&self, offset: T, val: U)
+    where
+        T: TryInto<u64>,
+        U: PrimInt,
+    {
+        self.clone().offset(offset).write(val);
     }
 
-    pub fn read_u16(&self) -> u16 {
-        unsafe {
-            return *(self.addr as *const u16);
-        }
+    pub fn read<T>(&self) -> T
+    where
+        T: Unsigned,
+    {
+        unsafe { core::ptr::read_volatile(self.addr as *const T) }
     }
 
-    pub fn read_u32(&self) -> u32 {
-        unsafe {
-            return *(self.addr as *const u32);
-        }
-    }
-
-    pub fn read_u64(&self) -> u64 {
-        unsafe {
-            return *(self.addr as *const u64);
-        }
+    pub fn read_w_off<T, U>(&self, offset: T) -> U
+    where
+        T: TryInto<u64>,
+        U: Unsigned,
+    {
+        self.clone().offset(offset).read()
     }
 }
 

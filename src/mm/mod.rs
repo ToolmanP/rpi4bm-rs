@@ -1,1 +1,3 @@
-pub mod allocator;
+mod heap;
+
+pub use self::heap::*;

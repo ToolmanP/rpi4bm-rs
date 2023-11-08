@@ -1,15 +1,13 @@
-use crate::io::gpio::GPIO;
-use crate::io::mmio::MMIO;
-use crate::io::periph::*;
+use crate::periph::interface::MMIO;
+use crate::periph::interface::GPIO;
+use crate::periph::base::*;
+
 use core::fmt::Write;
+
+pub const AUX_UART_CLOCK: u32 = 500000000;
 
 pub struct AUX {
     io: MMIO,
-}
-
-#[inline(always)]
-fn baud(baud: u32) -> u32 {
-    AUX_UART_CLOCK / (8 * baud) - 1
 }
 
 impl AUX {
@@ -50,12 +48,11 @@ impl AUX {
     }
 
     pub fn write_baud(&self, val: u32) {
-        self.io.write_w_off(104, val);
+        self.io.write_w_off(104, AUX_UART_CLOCK / (8 * val) - 1);
     }
 }
 
 pub struct UART {
-    gp: GPIO,
     aux: AUX,
 }
 
@@ -68,11 +65,11 @@ impl UART {
         aux.write_mcr(0);
         aux.write_ier(0);
         aux.write_iir(0xC6);
-        aux.write_baud(baud(115200));
+        aux.write_baud(115200);
         gp.alt5(14);
         gp.alt5(15);
         aux.write_cntl(3);
-        UART { gp, aux }
+        UART { aux }
     }
 
     fn ready(&self) -> bool {
@@ -87,42 +84,31 @@ impl UART {
         self.block();
         self.aux.write_io(ch as u32);
     }
+}
 
-    pub fn write_text(&self, text: &str) {
-        for ch in text.bytes() {
+impl Write for UART {
+    fn write_str(&mut self, s: &str) -> core::fmt::Result {
+        for ch in s.bytes() {
             if ch == '\n' as u8 {
                 self.write('\r' as u8)
             }
             self.write(ch);
         }
-    }
-}
-
-impl Write for UART {
-    fn write_str(&mut self, s: &str) -> core::fmt::Result {
-        self.write_text(s);
         Ok(())
     }
 }
 
 static mut RASPI_UART: Option<UART> = None;
-
 pub fn uart_init() {
     let gpio = GPIO::new(GPSET0, GPCLR0, GPPUPPDN0, GPFSEL0);
     let aux = AUX::new(AUX_BASE);
     unsafe {
         RASPI_UART = Some(UART::new(gpio, aux));
-        writeln!(
-            RASPI_UART.as_mut().unwrap(),
-            "UART initialization finished!"
-        )
-        .unwrap();
     }
 }
 
-pub fn uart_write(text: &str) {
-    unsafe {
-        writeln!(RASPI_UART.as_mut().unwrap(), "{}", text).unwrap();
+pub fn uart_write(s: &str){
+    unsafe{
+        RASPI_UART.as_mut().unwrap().write_str(s).unwrap(); 
     }
 }
-

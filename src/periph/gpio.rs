@@ -1,6 +1,19 @@
 use crate::io::mmio::MMIO;
 use crate::io::periph::*;
 
+pub const PERIPHERAL_BASE: u64 = 0xFE000000;
+
+pub const GPFSEL0: u64 = PERIPHERAL_BASE + 0x00200000;
+pub const GPSET0: u64 = PERIPHERAL_BASE + 0x0020001C;
+pub const GPCLR0: u64 = PERIPHERAL_BASE + 0x00200028;
+pub const GPPUPPDN0: u64 = PERIPHERAL_BASE + 0x002000E4;
+
+pub const AUX_BASE: u64 = PERIPHERAL_BASE + 0x00215000;
+
+pub const GPIO_MAX_PIN: u32 = 53;
+pub const GPIO_PULL_NONE: u32 = 0;
+pub const GPIO_FUNCTION_ALT5: u32 = 2;
+
 struct Base {
     io: MMIO,
     sz: u32,

@@ -6,37 +6,7 @@ pub struct MMIO {
     addr: u64,
 }
 
-pub enum Raw {
-    U64(u64),
-    U32(u32),
-    U16(u16),
-    U8(u8),
-}
-
-impl From<u64> for Raw {
-    fn from(val: u64) -> Self {
-        Raw::U64(val)
-    }
-}
-
-impl From<u32> for Raw {
-    fn from(val: u32) -> Self {
-        Raw::U32(val)
-    }
-}
-
-impl From<u16> for Raw {
-    fn from(val: u16) -> Self {
-        Raw::U16(val)
-    }
-}
-
-impl From<u8> for Raw {
-    fn from(val: u8) -> Self {
-        Raw::U8(val)
-    }
-}
-
+// We leverage the num_traits for better abstraction over r/w operations.
 impl MMIO {
     pub fn new(addr: u64) -> Self {
         MMIO { addr }
@@ -46,7 +16,7 @@ impl MMIO {
     where
         T: TryInto<u64>,
     {
-        // TODO: Check i64/u64 num_size
+        // FIXME: this is a tricky assumption
         self.addr += offset.try_into().unwrap_or(0);
         self
     }
@@ -59,7 +29,7 @@ impl MMIO {
             core::ptr::write_volatile(self.addr as *mut T, val);
         }
     }
-
+    
     pub fn write_w_off<T, U>(&self, offset: T, val: U)
     where
         T: TryInto<u64>,
